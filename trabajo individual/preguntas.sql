@@ -16,7 +16,13 @@
 ------ Deja aquí tus respuestas a las preguntas del enunciado:
 -- NO SE CORREGIRÁN RESPUESTAS QUE NO ESTÉN AQUÍ (utiliza el espacio que necesites para cada una)
 -- * P4.1 
---
+/*
+    A la hora de crear las tablas existe un `pedidos_activos INTEGER DEFAULT 0 CHECK (pedidos_activos <= 5)`. 
+    Este CHECK garantiza que el número de pedidos activos no supere el límite de 5.
+    De hecho, gracias a este check podríamos ignorar el añadir comprobaciones adicionales al software que se conecte a la base de datos, 
+    ya que la base de datos se encargaría de gestionar este límite.
+    En el caso de que se superase el límite, Tendríamos que gestionar esa excepción en el software.
+*/
 -- * P4.2
 --
 -- * P4.3
