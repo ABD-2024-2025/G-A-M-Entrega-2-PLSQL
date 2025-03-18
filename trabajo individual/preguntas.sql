@@ -11,6 +11,9 @@
         - ¿Qué implicaciones tendría en tu código? 
         - ¿Cómo afectaría en la gestión de excepciones? 
         - Describe en detalle las modificaciones que deberías hacer en tu código para mejorar tu solución ante esta situación (puedes añadir pseudocódigo).
+
+    5. ¿Qué tipo de estrategia de programación has utilizado? ¿Cómo
+    puede verse en tu código?
 */
 
 ------ Deja aquí tus respuestas a las preguntas del enunciado:
