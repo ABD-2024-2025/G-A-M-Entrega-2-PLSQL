@@ -21,13 +21,13 @@ Segunda práctica entregable de la asignatura Aplicaciones de Bases de Datos (AB
 </table>
 
 ## Referencias  
-Universidad de Burgos. (2025, 16 de marzo). *Práctica PLSQL 1C*. UBU Virtual.
+Universidad de Burgos. (2025, 18 de marzo). *Práctica PLSQL 1C*. UBU Virtual.
 [https://ubuvirtual.ubu.es/pluginfile.php/4589696/mod_folder/content/0/Practica_PLSQL_1C.pdf](https://ubuvirtual.ubu.es/pluginfile.php/4589696/mod_folder/content/0/Practica_PLSQL_1C.pdf)  
 
-Universidad de Burgos. (2025, 16 de marzo). *Trabajo PLSQL 1C - Enunciado*. UBU Virtual.
+Universidad de Burgos. (2025, 18 de marzo). *Trabajo PLSQL 1C - Enunciado*. UBU Virtual.
 [https://ubuvirtual.ubu.es/pluginfile.php/4589696/mod_folder/content/0/Trabajo_PLSQL_1C_Enun.sql](https://ubuvirtual.ubu.es/pluginfile.php/4589696/mod_folder/content/0/Trabajo_PLSQL_1C_Enun.sql)  
 
-Universidad de Burgos. (2025, 16 de marzo). *Oracle PLSQL Quick Reference Card*. UBU Virtual.
+Universidad de Burgos. (2025, 18 de marzo). *Oracle PLSQL Quick Reference Card*. UBU Virtual.
 [https://ubuvirtual.ubu.es/pluginfile.php/3811117/mod_resource/content/1/Oracle_PLSQL_Quick_Reference_Card.pdf](https://ubuvirtual.ubu.es/pluginfile.php/3811117/mod_resource/content/1/Oracle_PLSQL_Quick_Reference_Card.pdf)   
 
 ## Licencia
