@@ -35,7 +35,13 @@
     Considero que la primera es más sencilla de implementar y más eficiente, por lo que sería mi elección por excelencia.
 */
 -- * P4.3
---
+/*
+    Teniendo una visión optimimista, no habrá problemas gracias al FOR UPDATE, ya que hará un bloqueo de escritura, evitando que otros hilos y procesos puedan modificarlo.
+    Siendo realistas, siempre puede haber problemas de concurrencia aunque tomemos medidas, ya sea por un fallo en la seguridad de nuestra BD o una desconexión inesperada
+    que deje a los datos en un estado inconsistente, ya que ni SOLID puede evitar un apagón repentino de los servidores de la BD.
+
+    Por lo tanto, no podemos asegurar que el pedido se realizará de manera correcta.
+*/
 -- * P4.4/*
 /*
     1. Como mencioné en la pregunta 1, nos permitiría tener una comprobación directamente en la BD, 
