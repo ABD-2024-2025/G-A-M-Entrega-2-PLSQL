@@ -36,7 +36,45 @@
 */
 -- * P4.3
 --
--- * P4.4
---
+-- * P4.4/*
+/*
+    1. Como mencioné en la pregunta 1, nos permitiría tener una comprobación directamente en la BD, 
+    por lo que no sería necesario añadir comprobaciones adicionales en el software.
+    
+    2. La diferencia entre el CHECK y no haberlo es si salta una excepción en la BD o no. EL check hará que salte una excepción que podremos
+    gestionar, generar un código de error, un mensaje, y permitir que el software trabaje con ello, en vez de pedirle al propio software que haga la comprobación.
+
+    3. Habría que modificar el código para que gestione la excepción que salta en la BD, y que permita al usuario saber que ha habido un error.
+    Primero, modificamos la tabla de personal_servicio añadiendo el CHECK:
+    ```sql
+    CREATE TABLE personal_servicio (
+        id_personal INTEGER PRIMARY KEY,
+        nombre VARCHAR2(100) NOT NULL,
+        apellido VARCHAR2(100) NOT NULL,
+        pedidos_activos INTEGER DEFAULT 0 CHECK (pedidos_activos <= 5)
+    );
+    ```
+
+    Luego, modificamos el procedimiento registrar_pedido para que gestione la excepción:
+    ```sql
+    create or replace procedure registrar_pedido(
+        arg_id_cliente      INTEGER, 
+        arg_id_personal     INTEGER, 
+        arg_id_primer_plato INTEGER DEFAULT NULL,
+        arg_id_segundo_plato INTEGER DEFAULT NULL
+    ) is
+    begin
+        begin
+            registrar_pedido(101, 1, 1, 2);
+            -- Lo hacemos 5 veces más para que salte la excepción...
+        exception
+            when OTHERS then
+                raise_application_error(-20003, 'El personal de servicio tiene demasiados pedidos activos.');
+        end;
+    end;
+    ```
+
+    De esta forma, si se supera el límite de pedidos activos, se generará un error que podremos gestionar.
+*/
 -- * P4.5
 -- 
