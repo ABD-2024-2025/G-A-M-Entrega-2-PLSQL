@@ -21,10 +21,16 @@
     Este CHECK garantiza que el número de pedidos activos no supere el límite de 5.
     De hecho, gracias a este check podríamos ignorar el añadir comprobaciones adicionales al software que se conecte a la base de datos, 
     ya que la base de datos se encargaría de gestionar este límite.
-    En el caso de que se superase el límite, Tendríamos que gestionar esa excepción en el software.
+    En el caso de que se superase el límite, Tendríamos que gestionar esa excepción tanto en la BD como en el software.
 */
 -- * P4.2
---
+/*
+    Hay varias opciones, yo eligiría una de las 2 siguientes, dependiendo de la complejidad del sistema:
+    1. Un FOR UPDATE en la consulta que obtiene el personal de servicio, de esta forma se bloquea la fila y no se puede asignar a otro pedido.
+    2. Un trigger que se ejecute antes de insertar un pedido, que compruebe si el personal de servicio tiene pedidos activos y si los tiene, no permita la inserción.
+
+    Considero que la primera es más sencilla de implementar y más eficiente, por lo que sería mi elección por excelencia.
+*/
 -- * P4.3
 --
 -- * P4.4
