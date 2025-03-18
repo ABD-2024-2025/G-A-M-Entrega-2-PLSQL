@@ -59,4 +59,5 @@ create or replace procedure registrar_pedido(
 
   insert into pedidos 
     values (seq_pedidos.nextval, arg_id_cliente, arg_id_personal, CURRENT_DATE, total_coste);
+    
 end;
