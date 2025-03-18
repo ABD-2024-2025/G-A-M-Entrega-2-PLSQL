@@ -59,5 +59,14 @@ create or replace procedure registrar_pedido(
 
   insert into pedidos 
     values (seq_pedidos.nextval, arg_id_cliente, arg_id_personal, CURRENT_DATE, total_coste);
-    
+
+  if arg_id_primer_plato != NULL and arg_id_segundo_plato != NULL then
+    insert into detalle_pedido
+      values(seq_pedidos.currval, arg_id_primer_plato, 1);
+    insert into detalle_pedido
+      values(seq_pedidos.currval, arg_id_segundo_plato, 1);
+  end if;
+
+  update personal_servicio set pedidos_activos += 1 where id_personal = arg_id_personal;
+
 end;
