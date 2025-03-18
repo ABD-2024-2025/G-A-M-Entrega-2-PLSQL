@@ -2,14 +2,15 @@
 Segunda práctica entregable de la asignatura Aplicaciones de Bases de Datos (ABD) en la [Universidad de Burgos](https://www.ubu.es/) (UBU).
 ## Índice
 1. [Introducción](#introducción)
-2. [Descripción del enunciado](#descripción-del-enunciado)
-3. [Miembros del equipo](#miembros-del-equipo)
-4. [Referencias](#referencias)
-5. [Licencia](#licencia)
+2. [Miembros del equipo](#miembros-del-equipo)
+3. [Referencias](#referencias)
+4. [Licencia](#licencia)
 
 ## Introducción
-
-## Descripción del enunciado
+En esta práctica se realizará un trabajo en PLSQL con los siguientes apartados:
+- Creación del código del procedimiento siguiendo las instrucciones del enunciado. Ver issue [#2](https://github.com/ABD-2024-2025/G-A-M-Entrega-2-PLSQL/issues/2).
+- Creación de un script de pruebas para comprobar el correcto funcionamiento del procedimiento. Ver issue [#3](https://github.com/ABD-2024-2025/G-A-M-Entrega-2-PLSQL/issues/3).
+- Respuestas a las preguntas planteadas en el enunciado. Ver issue [#1](https://github.com/ABD-2024-2025/G-A-M-Entrega-2-PLSQL/issues/1).
 
 ## Miembros del equipo
 <table>
@@ -32,3 +33,7 @@ Universidad de Burgos. (2025, 18 de marzo). *Oracle PLSQL Quick Reference Card*.
 
 ## Licencia
 Este proyecto está bajo la licencia GPL-3.0. Ver el archivo [LICENSE](LICENSE) para más detalles.
+
+<div align="right">
+    <a href="#índice">Volver al índice ⬆️</a>
+</div>
