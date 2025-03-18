@@ -20,37 +20,56 @@
 -- NO SE CORREGIRÁN RESPUESTAS QUE NO ESTÉN AQUÍ (utiliza el espacio que necesites para cada una)
 -- * P4.1 
 /*
-    A la hora de crear las tablas existe un `pedidos_activos INTEGER DEFAULT 0 CHECK (pedidos_activos <= 5)`. 
+    A la hora de crear las tablas existe un `pedidos_activos INTEGER DEFAULT 0 
+    CHECK (pedidos_activos <= 5)`. 
+
     Este CHECK garantiza que el número de pedidos activos no supere el límite de 5.
-    De hecho, gracias a este check podríamos ignorar el añadir comprobaciones adicionales al software que se conecte a la base de datos, 
+    De hecho, gracias a este check podríamos ignorar el añadir comprobaciones 
+    adicionales al software que se conecte a la base de datos, 
     ya que la base de datos se encargaría de gestionar este límite.
-    En el caso de que se superase el límite, Tendríamos que gestionar esa excepción tanto en la BD como en el software.
+
+    En el caso de que se superase el límite, Tendríamos que gestionar esa 
+    excepción tanto en la BD como en el software.
 */
 -- * P4.2
 /*
-    Hay varias opciones, yo eligiría una de las 2 siguientes, dependiendo de la complejidad del sistema:
-    1. Un FOR UPDATE en la consulta que obtiene el personal de servicio, de esta forma se bloquea la fila y no se puede asignar a otro pedido.
-    2. Un trigger que se ejecute antes de insertar un pedido, que compruebe si el personal de servicio tiene pedidos activos y si los tiene, no permita la inserción.
+    Hay varias opciones, yo eligiría una de las 2 siguientes, dependiendo de la 
+    complejidad del sistema:
+    1. Un FOR UPDATE en la consulta que obtiene el personal de servicio, de esta 
+    forma se bloquea la fila y no se puede asignar a otro pedido.
 
-    Considero que la primera es más sencilla de implementar y más eficiente, por lo que sería mi elección por excelencia.
+    2. Un trigger que se ejecute antes de insertar un pedido, que compruebe si el 
+    personal de servicio tiene pedidos activos y si los tiene, no permita la inserción.
+
+    Considero que la primera es más sencilla de implementar y más eficiente, por 
+    lo que sería mi elección por excelencia.
 */
 -- * P4.3
 /*
-    Teniendo una visión optimimista, no habrá problemas gracias al FOR UPDATE, ya que hará un bloqueo de escritura, evitando que otros hilos y procesos puedan modificarlo.
-    Siendo realistas, siempre puede haber problemas de concurrencia aunque tomemos medidas, ya sea por un fallo en la seguridad de nuestra BD o una desconexión inesperada
-    que deje a los datos en un estado inconsistente, ya que ni SOLID puede evitar un apagón repentino de los servidores de la BD.
+    Teniendo una visión optimimista, no habrá problemas gracias al FOR UPDATE, 
+    ya que hará un bloqueo de escritura, evitando que otros hilos y procesos 
+    puedan modificarlo.
+
+    Siendo realistas, siempre puede haber problemas de concurrencia aunque 
+    tomemos medidas,  ya sea por un fallo en la seguridad de nuestra BD 
+    o una desconexión inesperada que deje a los datos en un estado inconsistente, 
+    ya que ni SOLID puede evitar un apagón repentino de los servidores de la BD.
 
     Por lo tanto, no podemos asegurar que el pedido se realizará de manera correcta.
 */
 -- * P4.4/*
 /*
-    1. Como mencioné en la pregunta 1, nos permitiría tener una comprobación directamente en la BD, 
-    por lo que no sería necesario añadir comprobaciones adicionales en el software.
+    1. Como mencioné en la pregunta 1, nos permitiría tener una comprobación 
+    directamente en la BD, por lo que no sería necesario añadir comprobaciones 
+    adicionales en el software.
     
-    2. La diferencia entre el CHECK y no haberlo es si salta una excepción en la BD o no. EL check hará que salte una excepción que podremos
-    gestionar, generar un código de error, un mensaje, y permitir que el software trabaje con ello, en vez de pedirle al propio software que haga la comprobación.
+    2. La diferencia entre el CHECK y no haberlo es si salta una excepción en 
+    la BD o no. EL check hará que salte una excepción que podremos gestionar, 
+    generar un código de error, un mensaje, y permitir que el software trabaje 
+    con ello, en vez de pedirle al propio software que haga la comprobación.
 
-    3. Habría que modificar el código para que gestione la excepción que salta en la BD, y que permita al usuario saber que ha habido un error.
+    3. Habría que modificar el código para que gestione la excepción que salta 
+    en la BD, y que permita al usuario saber que ha habido un error.
     Primero, modificamos la tabla de personal_servicio añadiendo el CHECK:
     ```sql
     CREATE TABLE personal_servicio (
@@ -61,7 +80,8 @@
     );
     ```
 
-    Luego, modificamos el procedimiento registrar_pedido para que gestione la excepción:
+    Luego, modificamos el procedimiento `registrar_pedido` 
+    para que gestione la excepción:
     ```sql
     create or replace procedure registrar_pedido(
         arg_id_cliente      INTEGER, 
@@ -75,12 +95,14 @@
             -- Lo hacemos 5 veces más para que salte la excepción...
         exception
             when OTHERS then
-                raise_application_error(-20003, 'El personal de servicio tiene demasiados pedidos activos.');
+                raise_application_error(-20003, \
+                'El personal de servicio tiene demasiados pedidos activos.');
         end;
     end;
     ```
 
-    De esta forma, si se supera el límite de pedidos activos, se generará un error que podremos gestionar.
+    De esta forma, si se supera el límite de pedidos activos, 
+    se generará un error que podremos gestionar.
 */
 -- * P4.5
 -- 
