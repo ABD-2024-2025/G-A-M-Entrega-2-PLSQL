@@ -37,3 +37,7 @@ Este proyecto está bajo la licencia GPL-3.0. Ver el archivo [LICENSE](LICENSE) 
 <div align="right">
     <a href="#índice">Volver al índice ⬆️</a>
 </div>
+
+<div align="center">
+  <img src="/assets/activity_graph.png" alt="Actividad del proyecto">
+</div>
