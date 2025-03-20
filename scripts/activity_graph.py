@@ -2,6 +2,7 @@ import subprocess
 import matplotlib.pyplot as plt
 import datetime
 from collections import defaultdict
+import os
 
 # Ejecutar un comando git para obtener fecha y autor de cada commit
 cmd = ['git', 'log', '--pretty=%cd|%an', '--date=iso']
@@ -34,6 +35,10 @@ for dia in fechas:
     for autor in autores:
         datos_apilados[autor].append(data[dia].get(autor, 0))
 
+# Crear el directorio si no existe
+output_directory = '/assets'
+os.makedirs(output_directory, exist_ok=True)
+
 # Graficar barras apiladas
 plt.figure(figsize=(12, 6))
 bottom = [0] * len(fechas)
@@ -49,5 +54,5 @@ plt.title('Actividad del Repositorio por Colaborador')
 plt.legend(title="Autores")
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig('/assets/activity_graph.png')
+plt.savefig(os.path.join(output_directory, 'activity_graph.png'))
 print("Gráfico generado correctamente.")
