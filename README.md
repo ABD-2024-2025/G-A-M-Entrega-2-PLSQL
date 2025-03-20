@@ -3,8 +3,9 @@ Segunda práctica entregable de la asignatura Aplicaciones de Bases de Datos (AB
 ## Índice
 1. [Introducción](#introducción)
 2. [Miembros del equipo](#miembros-del-equipo)
-3. [Referencias](#referencias)
-4. [Licencia](#licencia)
+3. [Actividad del proyecto](#actividad-del-proyecto)
+4. [Referencias](#referencias)
+5. [Licencia](#licencia)
 
 ## Introducción
 En esta práctica se realizará un trabajo en PLSQL con los siguientes apartados:
@@ -21,6 +22,11 @@ En esta práctica se realizará un trabajo en PLSQL con los siguientes apartados
     </tr>
 </table>
 
+## Actividad del proyecto
+<div align="center">
+  <img src="assets/activity_graph.png" alt="Actividad del proyecto">
+</div>
+
 ## Referencias  
 Universidad de Burgos. (2025, 18 de marzo). *Práctica PLSQL 1C*. UBU Virtual.
 [https://ubuvirtual.ubu.es/pluginfile.php/4589696/mod_folder/content/0/Practica_PLSQL_1C.pdf](https://ubuvirtual.ubu.es/pluginfile.php/4589696/mod_folder/content/0/Practica_PLSQL_1C.pdf)  
@@ -36,8 +42,4 @@ Este proyecto está bajo la licencia GPL-3.0. Ver el archivo [LICENSE](LICENSE) 
 
 <div align="right">
     <a href="#índice">Volver al índice ⬆️</a>
-</div>
-
-<div align="center">
-  <img src="/assets/activity_graph.png" alt="Actividad del proyecto">
 </div>

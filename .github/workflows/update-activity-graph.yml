@@ -27,8 +27,8 @@ jobs:
 
       - name: Confirmar y subir cambios
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "José Gallardo"
+          git config --global user.email "jgc1031@alu.ubu.es"
           git add activity_graph.png
           if ! git diff-index --quiet HEAD --; then
             git commit -m "Actualizar gráfico de actividad"

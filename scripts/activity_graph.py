@@ -6,7 +6,7 @@ import os
 
 # Ejecutar un comando git para obtener fecha y autor de cada commit
 cmd = ['git', 'log', '--pretty=%cd|%an', '--date=iso']
-result = subprocess.run(cmd, stdout=subprocess.PIPE, text=True)
+result = subprocess.run(cmd, stdout=subprocess.PIPE, text=True, encoding='utf-8')
 lines = result.stdout.splitlines()
 
 # Diccionario para agrupar los commits por fecha y autor
@@ -36,7 +36,7 @@ for dia in fechas:
         datos_apilados[autor].append(data[dia].get(autor, 0))
 
 # Crear el directorio si no existe
-output_directory = '/assets'
+output_directory = 'assets'
 os.makedirs(output_directory, exist_ok=True)
 
 # Graficar barras apiladas
@@ -54,5 +54,5 @@ plt.title('Actividad del Repositorio por Colaborador')
 plt.legend(title="Autores")
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig(os.path.join(output_directory, 'activity_graph.png'))
+plt.savefig('assets/activity_graph.png', dpi=300, bbox_inches='tight')
 print("Gráfico generado correctamente.")
