@@ -20,89 +20,132 @@
 -- NO SE CORREGIRÁN RESPUESTAS QUE NO ESTÉN AQUÍ (utiliza el espacio que necesites para cada una)
 -- * P4.1 
 /*
-    A la hora de crear las tablas existe un `pedidos_activos INTEGER DEFAULT 0 
-    CHECK (pedidos_activos <= 5)`. 
+    Garantizamos que un miembro del personal de servicio no supere el límite de pedidos activos 
+    realizando una verificación explícita antes de registrar el pedido:
+    
+    ```sql
+    SELECT pedidos_activos INTO v_pedidos_activos
+    FROM personal_servicio
+    WHERE id_personal = arg_id_personal;
 
-    Este CHECK garantiza que el número de pedidos activos no supere el límite de 5.
-    De hecho, gracias a este check podríamos ignorar el añadir comprobaciones 
-    adicionales al software que se conecte a la base de datos, 
-    ya que la base de datos se encargaría de gestionar este límite.
-
-    En el caso de que se superase el límite, Tendríamos que gestionar esa 
-    excepción tanto en la BD como en el software.
+    IF v_pedidos_activos >= 5 THEN 
+        raise_application_error(-20003, msg_personal_ocupado);
+    END IF;
+    ```
+    
+    Esta validación se realiza antes de insertar cualquier registro en la base de datos,
+    evitando así que se creen pedidos para personal que ya ha alcanzado su límite máximo.
+    Además, el test del caso 8 verifica específicamente este escenario para asegurar que
+    se lanza la excepción correcta cuando un miembro del personal ya tiene 5 pedidos activos.
 */
 -- * P4.2
 /*
-    Hay varias opciones, yo eligiría una de las 2 siguientes, dependiendo de la 
-    complejidad del sistema:
-    1. Un FOR UPDATE en la consulta que obtiene el personal de servicio, de esta 
-    forma se bloquea la fila y no se puede asignar a otro pedido.
-
-    2. Un trigger que se ejecute antes de insertar un pedido, que compruebe si el 
-    personal de servicio tiene pedidos activos y si los tiene, no permita la inserción.
-
-    Considero que la primera es más sencilla de implementar y más eficiente, por 
-    lo que sería mi elección por excelencia.
+    Para evitar problemas de concurrencia donde dos transacciones podrían asignar simultáneamente
+    pedidos al mismo personal que está cerca del límite, decidimos implementar un bloqueo a nivel de fila
+    usando la cláusula FOR UPDATE en la consulta que verifica los pedidos activos:
+    
+    ```
+    SELECT pedidos_activos INTO v_pedidos_activos
+    FROM personal_servicio
+    WHERE id_personal = arg_id_personal
+    FOR UPDATE;
+    ```
+    
+    Esta cláusula bloquea la fila del personal consultado hasta que se complete la transacción,
+    evitando que otras transacciones concurrentes puedan modificar los mismos datos.
+    De esta manera, si dos transacciones intentan asignar un pedido al mismo personal,
+    una de ellas tendrá que esperar hasta que la primera libere el bloqueo,
+    garantizando así la integridad de la restricción de pedidos activos.
 */
 -- * P4.3
 /*
-    Teniendo una visión optimimista, no habrá problemas gracias al FOR UPDATE, 
-    ya que hará un bloqueo de escritura, evitando que otros hilos y procesos 
-    puedan modificarlo.
-
-    Siendo realistas, siempre puede haber problemas de concurrencia aunque 
-    tomemos medidas,  ya sea por un fallo en la seguridad de nuestra BD 
-    o una desconexión inesperada que deje a los datos en un estado inconsistente, 
-    ya que ni SOLID puede evitar un apagón repentino de los servidores de la BD.
-
-    Por lo tanto, no podemos asegurar que el pedido se realizará de manera correcta.
-*/
--- * P4.4/*
-/*
-    1. Como mencioné en la pregunta 1, nos permitiría tener una comprobación 
-    directamente en la BD, por lo que no sería necesario añadir comprobaciones 
-    adicionales en el software.
+    Incluso después de implementar las comprobaciones y el bloqueo con FOR UPDATE,
+    no se puede garantizar al 100% que el pedido se realizará correctamente sin inconsistencias,
+    por varias razones:
     
-    2. La diferencia entre el CHECK y no haberlo es si salta una excepción en 
-    la BD o no. EL check hará que salte una excepción que podremos gestionar, 
-    generar un código de error, un mensaje, y permitir que el software trabaje 
-    con ello, en vez de pedirle al propio software que haga la comprobación.
-
-    3. Habría que modificar el código para que gestione la excepción que salta 
-    en la BD, y que permita al usuario saber que ha habido un error.
-    Primero, modificamos la tabla de personal_servicio añadiendo el CHECK:
-    ```sql
-    CREATE TABLE personal_servicio (
-        id_personal INTEGER PRIMARY KEY,
-        nombre VARCHAR2(100) NOT NULL,
-        apellido VARCHAR2(100) NOT NULL,
-        pedidos_activos INTEGER DEFAULT 0 CHECK (pedidos_activos <= 5)
-    );
-    ```
-
-    Luego, modificamos el procedimiento `registrar_pedido` 
-    para que gestione la excepción:
-    ```sql
-    create or replace procedure registrar_pedido(
-        arg_id_cliente      INTEGER, 
-        arg_id_personal     INTEGER, 
-        arg_id_primer_plato INTEGER DEFAULT NULL,
-        arg_id_segundo_plato INTEGER DEFAULT NULL
-    ) is
-    begin
-        begin
-            registrar_pedido(101, 1, 1, 2);
-            -- Lo hacemos 5 veces más para que salte la excepción...
-        exception
-            when OTHERS then
-                raise_application_error(-20003, \
-                'El personal de servicio tiene demasiados pedidos activos.');
-        end;
-    end;
-    ```
-
-    De esta forma, si se supera el límite de pedidos activos, 
-    se generará un error que podremos gestionar.
+    1. Pueden ocurrir errores durante la inserción del pedido o sus detalles que no están relacionados
+       con las validaciones previas (por ejemplo, problemas de almacenamiento, restricciones adicionales).
+    
+    2. En un entorno con conexiones concurrentes, pueden surgir deadlocks si múltiples transacciones
+       intentan bloquear recursos en diferente orden.
+    
+    3. Si el sistema se cae entre la inserción del pedido y la actualización de pedidos_activos,
+       podría quedar en un estado inconsistente.
+    
+    Para mitigar estos problemas, el procedimiento utiliza un manejo de transacciones explícito con
+    COMMIT al final y ROLLBACK en el bloque de excepciones, lo que garantiza la atomicidad de todas
+    las operaciones. Si cualquier parte falla, todas las operaciones se deshacen, manteniendo así
+    la consistencia de los datos.
+*/
+-- * P4.4
+/*
+    Si modificásemos la tabla personal_servicio añadiendo CHECK (pedidos_activos <= 5):
+    
+    - Implicaciones en el código:
+        La restricción CHECK proporcionaría una capa adicional de seguridad a nivel de base de datos,
+        actuando como una "red de seguridad" incluso si la validación en el código fallara.
+        Esta redundancia es positiva para garantizar la integridad de los datos.
+    
+    - Efecto en la gestión de excepciones:
+        Si se intenta actualizar pedidos_activos a un valor mayor que 5, la base de datos lanzaría
+        una excepción ORA-02290 (restricción CHECK violada). Esta excepción tendría que ser capturada
+        en el bloque EXCEPTION del procedimiento, diferenciándola de otras excepciones.
+    
+    - Modificaciones necesarias:
+        1. Podríamos mantener la validación previa por claridad y mejor experiencia de usuario,
+        permitiendo mensajes de error más específicos.
+        2. El bloque EXCEPTION debería ampliarse para capturar específicamente la violación de CHECK:
+      
+      ```sql
+        EXCEPTION
+            WHEN check_constraint_violated THEN
+                -- Definir un código de error personalizado para esta excepción
+                ROLLBACK;
+                raise_application_error(-20003, msg_personal_ocupado);
+            WHEN OTHERS THEN
+                ROLLBACK;
+                RAISE;
+      ```
+      
+        3. Para mejorar el rendimiento, podríamos incluso considerar eliminar la validación previa
+        y depender completamente de la restricción CHECK, simplificando el código pero sacrificando
+        la personalización del mensaje de error.
 */
 -- * P4.5
--- 
+/*
+    En la implementación de registrar_pedido hemos utilizado varias estrategias de programación:
+    
+    1. Programación defensiva: El código verifica múltiples condiciones antes de realizar cualquier
+    operación crítica (validación de platos existentes, disponibilidad, límites de pedidos). Esto
+    se evidencia en las validaciones previas a las inserciones y actualizaciones:
+    
+    ```sql
+    IF arg_id_primer_plato IS NULL AND arg_id_segundo_plato IS NULL THEN
+        raise_application_error(-20002, msg_pedido_no_valido);
+    END IF;
+    ```
+    
+    2. Manejo estructurado de excepciones: Definimos excepciones personalizadas con códigos específicos
+    para diferentes tipos de errores, lo que facilita la identificación y gestión de problemas:
+    
+    ```sql
+    PRAGMA exception_init(Plato_no_disponible, -20001);
+    PRAGMA exception_init(Pedido_no_valido, -20002);
+    PRAGMA exception_init(Personal_ocupado, -20003);
+    PRAGMA exception_init(Plato_inexistente, -20004);
+    ```
+    
+    3. Transaccionalidad: Aseguramos la atomicidad de las operaciones mediante el uso de COMMIT al final
+    del procedimiento y ROLLBACK en caso de cualquier error:
+    
+    ```sql
+    EXCEPTION
+        WHEN OTHERS THEN
+            ROLLBACK;
+            RAISE;
+    ```
+    
+    4. Modularidad: El código está estructurado en bloques lógicos separados (validación, inserciones
+    de pedidos, inserciones de detalles, actualización de contadores), lo que mejora la legibilidad
+    y mantenibilidad.
+*/
