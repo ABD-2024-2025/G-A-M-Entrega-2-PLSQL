@@ -1,72 +1,184 @@
-create or replace procedure registrar_pedido(
-    arg_id_cliente      INTEGER, 
-    arg_id_personal     INTEGER, 
-    arg_id_primer_plato INTEGER DEFAULT NULL,
-    arg_id_segundo_plato INTEGER DEFAULT NULL
-) is 
+CREATE
+OR replace PROCEDURE registrar_pedido(
+	arg_id_cliente INTEGER,
+	arg_id_personal INTEGER,
+	arg_id_primer_plato INTEGER DEFAULT NULL,
+	arg_id_segundo_plato INTEGER DEFAULT NULL
+) IS Pedido_no_valido
+EXCEPTION
+;
 
-    Pedido_no_valido exception;
-    pragma exception_init(Pedido_no_valido, -20002);
-    msg_pedido_no_valido constant varchar(50) := 'El pedido debe contener al menos un plato.';
-    
-    Plato_no_disponible exception;
-    pragma exception_init(Plato_no_disponible, -20001);
-    msg_plato_no_disponible constant varchar(50) := 'Uno de los platos seleccionados no está disponible.';
+PRAGMA exception_init(Pedido_no_valido, -20002);
 
-    Plato_inexistente exception;
-    pragma exception_init(Plato_inexistente, -20004);
-    msg_primero_inexistente constant varchar(50) := '‘El primer plato seleccionado no existe.';
-    msg_segundo_inexistente constant varchar(50) := '‘El segundo plato seleccionado no existe.';
+msg_pedido_no_valido CONSTANT VARCHAR2(200) := 'El pedido debe contener al menos un plato.';
 
-    Personal_ocupado exception;
-    pragma exception_init(Personal_ocupado, -20003);
-    msg_personal_ocupado constant varchar(50) := 'El personal de servicio tiene demasiados pedidos.';
-  
-  total_coste INTEGER;
+Plato_no_disponible
+EXCEPTION
+;
 
- begin
-  
-  if arg_id_primer_plato = NULL and arg_id_segundo_plato = NULL then
-    raise_application_error(-20002, msg_pedido_no_valido);
-  end if;
+PRAGMA exception_init(Plato_no_disponible, -20001);
 
-  total_coste = 0;
+msg_plato_no_disponible CONSTANT VARCHAR2(200) := 'Uno de los platos seleccionados no está disponible.';
 
-  if arg_id_primer_plato != NULL then
-    select disponible into primero from platos where id_plato = arg_id_primer_plato;
-    if SQL%NOTFOUND then
-      raise_application_error(-20004, msg_primero_inexistente);
-    end if;
-    if !primero then
-      raise_application_error(-20001, msg_plato_no_disponible);
-    end if;
-    total_coste += select precio from platos where id_plato = arg_id_primer_plato;
-  end if;
+Plato_inexistente
+EXCEPTION
+;
 
-  if arg_id_segundo_plato != NULL then
-    select disponible into segundo from platos where id_plato = arg_id_segundo_plato;
-    if SQL%NOTFOUND then
-      raise_application_error(-20004, msg_segundo_inexistente);
-    end if;
-    if !segundo then
-      raise_application_error(-20001, msg_plato_no_disponible);
-    end if;
-    total_coste += select precio from platos where id_plato = arg_id_segundo_plato;
-  end if;
+PRAGMA exception_init(Plato_inexistente, -20004);
 
-  if select pedidos_activos from personal_servicio where id_personal = arg_id_personal >= 5 then
-    raise_application_error(-20003, msg_personal_ocupado);
+msg_primero_inexistente CONSTANT VARCHAR2(200) := 'El primer plato seleccionado no existe.';
 
-  insert into pedidos 
-    values (seq_pedidos.nextval, arg_id_cliente, arg_id_personal, CURRENT_DATE, total_coste);
+msg_segundo_inexistente CONSTANT VARCHAR2(200) := 'El segundo plato seleccionado no existe.';
 
-  if arg_id_primer_plato != NULL and arg_id_segundo_plato != NULL then
-    insert into detalle_pedido
-      values(seq_pedidos.currval, arg_id_primer_plato, 1);
-    insert into detalle_pedido
-      values(seq_pedidos.currval, arg_id_segundo_plato, 1);
-  end if;
+Personal_ocupado
+EXCEPTION
+;
 
-  update personal_servicio set pedidos_activos += 1 where id_personal = arg_id_personal;
+PRAGMA exception_init(Personal_ocupado, -20003);
 
-end;
+msg_personal_ocupado CONSTANT VARCHAR2(200) := 'El personal de servicio tiene demasiados pedidos.';
+
+total_coste DECIMAL(10, 2);
+
+primero NUMBER(1);
+
+segundo NUMBER(1);
+
+v_precio DECIMAL(10, 2);
+
+v_pedidos_activos INTEGER;
+
+v_plato_existe INTEGER;
+
+BEGIN
+	-- Verificar que hay al menos un plato en el pedido
+	IF arg_id_primer_plato IS NULL
+	AND arg_id_segundo_plato IS NULL THEN raise_application_error(-20002, msg_pedido_no_valido);
+
+END IF;
+
+total_coste := 0;
+
+-- Verificar primer plato
+IF arg_id_primer_plato IS NOT NULL THEN -- Verificar si el plato existe
+SELECT
+	COUNT(*) INTO v_plato_existe
+FROM
+	platos
+WHERE
+	id_plato = arg_id_primer_plato;
+
+IF v_plato_existe = 0 THEN raise_application_error(-20004, msg_primero_inexistente);
+
+END IF;
+
+-- Verificar disponibilidad y obtener precio
+SELECT
+	disponible,
+	precio INTO primero,
+	v_precio
+FROM
+	platos
+WHERE
+	id_plato = arg_id_primer_plato;
+
+IF primero = 0 THEN raise_application_error(-20001, msg_plato_no_disponible);
+
+END IF;
+
+total_coste := total_coste + v_precio;
+
+END IF;
+
+-- Verificar segundo plato
+IF arg_id_segundo_plato IS NOT NULL THEN -- Verificar si el plato existe
+SELECT
+	COUNT(*) INTO v_plato_existe
+FROM
+	platos
+WHERE
+	id_plato = arg_id_segundo_plato;
+
+IF v_plato_existe = 0 THEN raise_application_error(-20004, msg_segundo_inexistente);
+
+END IF;
+
+-- Verificar disponibilidad y obtener precio
+SELECT
+	disponible,
+	precio INTO segundo,
+	v_precio
+FROM
+	platos
+WHERE
+	id_plato = arg_id_segundo_plato;
+
+IF segundo = 0 THEN raise_application_error(-20001, msg_plato_no_disponible);
+
+END IF;
+
+total_coste := total_coste + v_precio;
+
+END IF;
+
+-- Verificar si el personal tiene capacidad para otro pedido
+SELECT
+	pedidos_activos INTO v_pedidos_activos
+FROM
+	personal_servicio
+WHERE
+	id_personal = arg_id_personal FOR
+UPDATE
+;
+
+IF v_pedidos_activos >= 5 THEN raise_application_error(-20003, msg_personal_ocupado);
+
+END IF;
+
+-- Insertar el pedido
+INSERT INTO
+	pedidos
+VALUES
+	(
+		seq_pedidos.nextval,
+		arg_id_cliente,
+		arg_id_personal,
+		SYSDATE,
+		total_coste
+	);
+
+-- Insertar detalles del pedido
+IF arg_id_primer_plato IS NOT NULL THEN
+INSERT INTO
+	detalle_pedido
+VALUES
+	(seq_pedidos.currval, arg_id_primer_plato, 1);
+
+END IF;
+
+IF arg_id_segundo_plato IS NOT NULL THEN
+INSERT INTO
+	detalle_pedido
+VALUES
+	(seq_pedidos.currval, arg_id_segundo_plato, 1);
+
+END IF;
+
+-- Actualizar contador de pedidos activos del personal
+UPDATE
+	personal_servicio
+SET
+	pedidos_activos = pedidos_activos + 1
+WHERE
+	id_personal = arg_id_personal;
+
+COMMIT;
+
+EXCEPTION
+	WHEN OTHERS THEN -- Realizar un rollback explícito cuando ocurra cualquier error
+	ROLLBACK;
+
+-- Re-lanzar la excepción para que el cliente sepa qué ocurrió
+RAISE;
+
+END;
