@@ -6,6 +6,8 @@
     Notes:
         - Hemos identado todo el código utilizando esta extensión de VSCode: 
         https://marketplace.visualstudio.com/items?itemName=adpyke.vscode-sql-formatter
+        - Repositorio GitHub de la práctica:
+        https://github.com/ABD-2024-2025/G-A-M-Entrega-2-PLSQL
 */
 
 DROP TABLE detalle_pedido CASCADE CONSTRAINTS;
